@@ -4,9 +4,10 @@ import argparse
 
 
 class FilesEncryptor:
-    def __init__(self, name):
+    def __init__(self, name, output_name):
         self.key = None
         self.name = name
+        self.output_name = output_name
 
     def set_key(self, key):
         self.key = key
@@ -16,10 +17,9 @@ class FilesEncryptor:
             f = bytes.hex(f.read())
 
         self.name = encrypt(self.name.encode('utf-8').hex(), self.key)
-        print(self.name)
         enc = encrypt(f, self.key)
 
-        with open('enc', 'wb') as f:
+        with open(self.output_name, 'wb') as f:
             f.write(bytes.fromhex(self.name) + b'\n')
             f.write(bytes.fromhex(enc))
 
@@ -59,11 +59,17 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-e", "--encrypt", help="Encrypt given file")
 parser.add_argument("-d", "--decrypt", help="Decrypt given file")
 parser.add_argument("-k", "--key", required=True)
+parser.add_argument("-o", "--output")
 args = parser.parse_args()
 
 passed_args = True
+output_name = args.output
+
 if args.encrypt:
-    file_manager = FilesEncryptor(args.encrypt)
+    if output_name is None:
+        print('You need to enter -o [output filename]')
+        passed_args = False
+    else: file_manager = FilesEncryptor(args.encrypt, output_name)
 elif args.decrypt:
     file_manager = FilesDecryptor(args.decrypt)
 else:
